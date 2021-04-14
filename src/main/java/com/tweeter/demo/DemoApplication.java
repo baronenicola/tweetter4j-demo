@@ -1,5 +1,6 @@
 package com.tweeter.demo;
 
+import com.tweeter.demo.configuration.Factory;
 import com.tweeter.demo.domain.TweetsTimeLine;
 import com.tweeter.demo.repository.TweetsTimeLineRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -21,9 +22,12 @@ import java.util.Objects;
 @Slf4j
 @SpringBootApplication
 public class DemoApplication {
+
 	@Autowired
 	private Environment env;
 
+	@Autowired
+	private Factory factory;
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
 	}
@@ -39,7 +43,7 @@ public class DemoApplication {
 		if(log.isDebugEnabled()){log.debug("Start initData Method, writing the initial data to the database");}
 		return (args) -> {
 
-			Twitter twitter = getTwitterFactory();
+			Twitter twitter = factory.getTwitterFactory();
 			List<Status> statuses = twitter.getHomeTimeline();
 			int followers=Integer.parseInt(Objects.requireNonNull(env.getProperty("query.minNumberOfFollowers")));
 
@@ -57,18 +61,5 @@ public class DemoApplication {
 		};
 	}
 
-
-
-	private Twitter getTwitterFactory() {
-		ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-
-		configurationBuilder.setDebugEnabled(true)
-				.setOAuthConsumerKey(env.getProperty("spring.social.twitter.ConsumerKey"))
-				.setOAuthConsumerSecret(env.getProperty("spring.social.twitter.OAuthConsumerSecret"))
-				.setOAuthAccessToken(env.getProperty("spring.social.twitter.OAuthAccessToken"))
-				.setOAuthAccessTokenSecret(env.getProperty("spring.social.twitter.OAuthAccessTokenSecret"));
-		if(log.isDebugEnabled()){log.debug("Created Twitter configuration");}
-		return new TwitterFactory(configurationBuilder.build()).getInstance();
-	}
 
 }
